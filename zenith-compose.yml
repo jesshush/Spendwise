@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      DB_PATH: /data/spendwise.db
+    volumes:
+      - spendwise-data:/data
+    restart: unless-stopped
+
+volumes:
+  spendwise-data:
+  

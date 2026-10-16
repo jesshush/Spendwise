@@ -3,7 +3,7 @@ const crypto = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
 // 1. Database: one file, two tables
-const db = new DatabaseSync('spendwise.db');
+const db = new DatabaseSync(process.env.DB_PATH || 'spendwise.db');
 db.exec(`CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT, email TEXT UNIQUE, password TEXT)`);
