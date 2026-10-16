@@ -1,0 +1,16 @@
+[hidden] { display: none !important; }
+body { font-family: system-ui, sans-serif; background: #F6F4EF; margin: 0;
+       min-height: 100vh; display: grid; place-items: center; }
+.card { background: #fff; padding: 32px; border-radius: 16px; width: min(380px, 90vw);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, .08); }
+h1 { color: #1E7A52; margin-top: 0; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tabs button { flex: 1; padding: 10px; border: 0; border-radius: 10px; background: #ECE9E1;
+               font-weight: 600; cursor: pointer; }
+.tabs button.active { background: #1E7A52; color: #fff; }
+label { display: block; margin-bottom: 12px; font-weight: 600; }
+input { display: block; width: 100%; box-sizing: border-box; margin-top: 4px; padding: 12px;
+        border: 1px solid #ccc; border-radius: 10px; font: inherit; }
+#submit, #logout { width: 100%; padding: 12px; border: 0; border-radius: 10px;
+                   background: #1E7A52; color: #fff; font-weight: 700; cursor: pointer; }
+#error { color: #B3401F; min-height: 1em; }
