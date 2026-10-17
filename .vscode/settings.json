@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^npm install --package-lock-only --ignore-scripts$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

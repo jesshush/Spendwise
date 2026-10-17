@@ -1,15 +1,44 @@
 services:
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: spendwise
+      POSTGRES_USER: spendwise
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spendwise-local}
+    volumes:
+      - spendwise-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spendwise -d spendwise"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  predictor:
+    build:
+      context: ./model
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    restart: unless-stopped
+
   web:
     build: .
     ports:
       - "3000:3000"
     environment:
       PORT: "3000"
-      DB_PATH: /data/spendwise.db
-    volumes:
-      - spendwise-data:/data
+      DATABASE_URL: postgres://spendwise:${POSTGRES_PASSWORD:-spendwise-local}@database:5432/spendwise
+      PREDICTOR_URL: http://predictor:5000
+    depends_on:
+      database:
+        condition: service_healthy
+      predictor:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  spendwise-data:
+  spendwise-postgres:
   

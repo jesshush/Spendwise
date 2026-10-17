@@ -3,32 +3,191 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spendwise</title>
+  <meta name="theme-color" content="#07111c">
+  <title>Spendwise — Monthly budget</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="card">
-    <h1>Spendwise</h1>
-
-    <div id="auth">
+  <main id="auth-screen" class="auth-screen">
+    <section class="auth-card">
+      <a class="brand" href="#"><span class="brand-mark">S</span> Spendwise</a>
+      <p class="eyebrow">YOUR MONEY, IN FOCUS</p>
+      <h1>Make room for what matters.</h1>
+      <p class="muted">Plan your monthly budget and keep every account in view.</p>
       <div class="tabs">
-        <button id="tab-login" class="active">Log in</button>
-        <button id="tab-signup">Sign up</button>
+        <button type="button" id="tab-login" class="active">Log in</button>
+        <button type="button" id="tab-signup">Create account</button>
       </div>
-      <form id="form">
-        <label id="name-row" hidden>First name <input id="name"></label>
-        <label>Email <input id="email" type="email" required></label>
-        <label>Password <input id="password" type="password" required minlength="8"></label>
-        <p id="error"></p>
-        <button type="submit" id="submit">Log in</button>
+      <form id="auth-form">
+        <label id="name-row" hidden>Name <input id="name" autocomplete="name"></label>
+        <label>Email <input id="email" type="email" required autocomplete="email"></label>
+        <label>Password <input id="password" type="password" required minlength="8" autocomplete="current-password"></label>
+        <p id="auth-error" class="error" role="alert"></p>
+        <button type="submit" id="auth-submit" class="button button-primary full">Log in</button>
       </form>
-    </div>
-
-    <div id="home" hidden>
-      <h2 id="hello"></h2>
-      <button id="logout">Log out</button>
-    </div>
+    </section>
   </main>
+
+  <div id="app-screen" class="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#"><span class="brand-mark">S</span> Spendwise</a>
+      <div class="workspace-name"><span class="online-dot"></span><span id="user-name">My Budget</span></div>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-view="budget"><span>▣</span> Budget</button>
+        <button class="nav-link" data-view="transactions"><span>↕</span> Transactions</button>
+        <button class="nav-link" data-view="reports"><span>▥</span> Reports</button>
+        <button class="nav-link" data-view="schedules"><span>◷</span> Schedules</button>
+        <button class="nav-link" data-view="investment"><span>◇</span> Investment advice</button>
+      </nav>
+      <div class="sidebar-accounts">
+        <div class="section-label">ACCOUNTS <button type="button" class="icon-button" data-action="add-account" aria-label="Add account">+</button></div>
+        <div id="account-list"></div>
+        <button type="button" class="sidebar-add" data-action="add-account">＋ Add account</button>
+      </div>
+      <button id="logout" class="logout-button">Log out</button>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">PERSONAL FINANCE</p>
+          <h1 id="page-title">Monthly budget</h1>
+        </div>
+        <div class="topbar-actions">
+          <label class="month-picker">Month <input id="month-picker" type="month"></label>
+          <button type="button" class="button button-primary" data-action="add-transaction">＋ Add transaction</button>
+        </div>
+      </header>
+
+      <section id="view-budget" class="view-panel">
+        <div class="summary-grid">
+          <article class="summary-card summary-highlight">
+            <div class="summary-top"><span>Available in budget</span><span class="summary-icon">◈</span></div>
+            <strong id="available-total">$0.00</strong>
+            <small>Budgeted amount minus spending this month</small>
+          </article>
+          <article class="summary-card">
+            <div class="summary-top"><span>Budgeted</span><span class="summary-icon">▤</span></div>
+            <strong id="budget-total">$0.00</strong>
+            <small>This month’s planned expenses</small>
+          </article>
+          <article class="summary-card">
+            <div class="summary-top"><span>Spent</span><span class="summary-icon">↗</span></div>
+            <strong id="spent-total">$0.00</strong>
+            <small id="income-total">$0.00 income this month</small>
+          </article>
+          <article class="summary-card">
+            <div class="summary-top"><span>All accounts</span><span class="summary-icon">▣</span></div>
+            <strong id="accounts-total">$0.00</strong>
+            <small>Current combined balance</small>
+          </article>
+        </div>
+        <div class="content-card">
+          <div class="card-heading">
+            <div><p class="eyebrow">PLAN & TRACK</p><h2>Category budgets</h2></div>
+            <div class="heading-actions">
+              <button type="button" class="button button-secondary" data-action="add-category">＋ Category</button>
+              <button type="button" class="button button-secondary" data-action="add-budget">＋ Set budget</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Category</th><th>Budgeted</th><th>Spent</th><th>Available</th><th>Progress</th></tr></thead>
+              <tbody id="budget-rows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="content-card">
+          <div class="card-heading">
+            <div><p class="eyebrow">LATEST ACTIVITY</p><h2>Recent transactions</h2></div>
+            <button type="button" class="text-button" data-view-link="transactions">View all →</button>
+          </div>
+          <div id="recent-transactions" class="transaction-list"></div>
+        </div>
+      </section>
+
+      <section id="view-transactions" class="view-panel" hidden>
+        <div class="content-card">
+          <div class="card-heading"><div><p class="eyebrow">MONEY MOVEMENT</p><h2>Transactions</h2></div>
+            <button type="button" class="button button-primary" data-action="add-transaction">＋ Add transaction</button></div>
+          <div id="transaction-list" class="transaction-list"></div>
+        </div>
+      </section>
+
+      <section id="view-reports" class="view-panel" hidden>
+        <div class="summary-grid report-summary">
+          <article class="summary-card"><div class="summary-top"><span>Income</span><span class="summary-icon">↘</span></div><strong id="report-income">$0.00</strong><small>For selected month</small></article>
+          <article class="summary-card"><div class="summary-top"><span>Expenses</span><span class="summary-icon">↗</span></div><strong id="report-spent">$0.00</strong><small>For selected month</small></article>
+          <article class="summary-card"><div class="summary-top"><span>Net</span><span class="summary-icon">◇</span></div><strong id="report-net">$0.00</strong><small>Income less expenses</small></article>
+        </div>
+        <div class="content-card"><div class="card-heading"><div><p class="eyebrow">MONTHLY BREAKDOWN</p><h2>Spending by category</h2><p class="muted">Reports include all transactions dated in the selected month, including future-dated entries.</p></div></div>
+          <div id="report-bars" class="report-bars"></div></div>
+      </section>
+
+      <section id="view-schedules" class="view-panel" hidden>
+        <div class="content-card">
+          <div class="card-heading"><div><p class="eyebrow">RECURRING MONEY</p><h2>Schedules</h2><p class="muted">Track regular bills and income. Schedules are reminders and do not post transactions automatically.</p></div>
+            <button type="button" class="button button-primary" data-action="add-schedule">＋ Add schedule</button></div>
+          <div id="schedule-list" class="transaction-list"></div>
+        </div>
+      </section>
+
+      <section id="view-investment" class="view-panel" hidden>
+        <div class="content-card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">PERSONALIZED ESTIMATE</p>
+              <h2>Investment recommendation</h2>
+              <p class="muted">Income and expenses are estimated from up to 12 months of transactions; portfolio uses investment-account balances, and debt uses negative credit/loan balances. These estimates are separate from the month selected in Reports and can be edited before prediction.</p>
+              <p id="investment-coverage" class="muted" aria-live="polite"></p>
+            </div>
+            <button type="button" id="refresh-investment-estimates" class="button button-secondary">Refresh account estimates</button>
+          </div>
+          <form id="investment-form" class="investment-form">
+            <div class="investment-fields">
+              <label>Age<input name="age" type="number" min="0" max="120" step="1" required></label>
+              <label>Employment status<select name="employment_status" required>
+                <option value="">Choose one</option><option>Salaried</option><option>Self-Employed</option><option>Retired</option><option>Student</option><option>Unemployed</option>
+              </select></label>
+              <label>Annual income (USD)<input name="annual_income_usd" type="number" min="0" step="0.01" required></label>
+              <label>Marital status<select name="marital_status" required>
+                <option value="">Choose one</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option>
+              </select></label>
+              <label>Dependents<input name="dependents_count" type="number" min="0" max="100" step="1" required></label>
+              <label>Credit score<input name="credit_score" type="number" min="300" max="850" step="1" required></label>
+              <label>Total debt (USD)<input name="total_debt_usd" type="number" min="0" step="0.01" required></label>
+              <label>Monthly expenses (USD)<input name="monthly_expenses_usd" type="number" min="0" step="0.01" required></label>
+              <label>Emergency fund (months)<input name="emergency_fund_months" type="number" min="0" max="120" step="0.1" required></label>
+              <label>Investment portfolio (USD)<input name="investment_portfolio_usd" type="number" min="0" step="0.01" required></label>
+              <label>Primary goal<select name="primary_goal" required>
+                <option value="">Choose one</option><option>Business Investment</option><option>Debt Reduction</option><option>Education</option><option>Emergency Fund</option><option>Estate Planning</option><option>Healthcare</option><option>Home Purchase</option><option>Retirement</option><option>Travel</option><option>Wealth Accumulation</option>
+              </select></label>
+              <label>Time horizon (years)<input name="time_horizon_years" type="number" min="0" max="100" step="1" required></label>
+              <label>Target amount (USD)<input name="target_amount_usd" type="number" min="0" step="0.01" required></label>
+              <label>Risk tolerance (1–10)<input name="risk_tolerance_1_10" type="number" min="1" max="10" step="1" required></label>
+              <label>Trust in institutions (1–10)<input name="trust_in_institutions_1_10" type="number" min="1" max="10" step="1" required></label>
+            </div>
+            <p class="muted investment-disclaimer">The model uses 15 profile fields. Session details, preferred channel, and derived columns from the training dataset are not inputs. Personal profile fields are saved after a successful prediction. This result is informational only, not financial advice.</p>
+            <p id="investment-error" class="error" role="alert"></p>
+            <button type="submit" id="predict-investment" class="button button-primary">Predict investment</button>
+          </form>
+        </div>
+        <div id="investment-results" class="content-card investment-results" hidden aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="entry-dialog" class="entry-dialog">
+    <form id="entry-form">
+      <div class="dialog-heading"><div><p class="eyebrow" id="dialog-eyebrow">SPENDWISE</p><h2 id="dialog-title">Add item</h2></div>
+        <button type="button" class="icon-button" id="dialog-close" aria-label="Close">×</button></div>
+      <div id="dialog-fields" class="dialog-fields"></div>
+      <p id="dialog-error" class="error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" class="button button-secondary" id="dialog-cancel">Cancel</button>
+        <button type="submit" class="button button-primary" id="dialog-submit">Save</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status"></div>
   <script src="app.js"></script>
 </body>
 </html>
