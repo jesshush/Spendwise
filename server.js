@@ -1,4 +1,5 @@
 const crypto = require('node:crypto');
+const { spawn } = require('node:child_process');
 const express = require('express');
 const { Pool } = require('pg');
 
@@ -719,9 +720,60 @@ async function initializeDatabase() {
   `);
 }
 
-initializeDatabase()
-  .then(() => app.listen(PORT, () => console.log(`Spendwise running on port ${PORT}`)))
-  .catch((error) => {
-    console.error('Could not initialize PostgreSQL:', error);
+async function waitForPredictor(child) {
+  const deadline = Date.now() + 120000;
+  let spawnError;
+  child.once('error', (error) => { spawnError = error; });
+
+  while (Date.now() < deadline) {
+    if (spawnError) throw spawnError;
+    if (child.exitCode !== null) {
+      throw new Error(`Investment predictor exited with code ${child.exitCode}.`);
+    }
+    try {
+      const response = await fetch(`${PREDICTOR_URL}/health`, {
+        signal: AbortSignal.timeout(1000),
+      });
+      if (response.ok) return;
+    } catch {
+      // The predictor may still be loading the model.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error('Investment predictor did not become healthy within 120 seconds.');
+}
+
+async function start() {
+  let predictor;
+  try {
+    if (process.env.PREDICTOR_AUTOSTART === 'true') {
+      predictor = spawn(
+        process.env.PYTHON_PATH || '/opt/predictor-venv/bin/python',
+        ['-u', 'model/serve.py'],
+        { stdio: 'inherit' },
+      );
+      await waitForPredictor(predictor);
+      predictor.on('exit', (code, signal) => {
+        console.error(`Investment predictor stopped (code ${code}, signal ${signal}).`);
+        process.exit(1);
+      });
+    }
+
+    await initializeDatabase();
+    const server = app.listen(PORT, () => console.log(`Spendwise running on port ${PORT}`));
+    const shutdown = async () => {
+      server.close();
+      if (predictor && predictor.exitCode === null) predictor.kill('SIGTERM');
+      await pool.end();
+    };
+    process.once('SIGTERM', shutdown);
+    process.once('SIGINT', shutdown);
+  } catch (error) {
+    if (predictor && predictor.exitCode === null) predictor.kill('SIGTERM');
+    console.error('Could not start Spendwise:', error);
+    await pool.end();
     process.exitCode = 1;
-  });
+  }
+}
+
+start();

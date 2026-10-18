@@ -1,3 +1,16 @@
+x-zenith:
+  catalog:
+    name: Spendwise
+    description: Personal budgeting with transaction tracking, monthly reports, and model-based investment recommendations.
+    authors: [jesshush]
+    source: https://github.com/jesshush/Spendwise
+    license: UNLICENSED
+    tags: [budgeting, personal-finance, finance]
+  expose:
+    - service: web
+      port: 3000
+      web: true
+
 services:
   database:
     image: postgres:16-alpine
@@ -14,16 +27,6 @@ services:
       retries: 10
     restart: unless-stopped
 
-  predictor:
-    build:
-      context: ./model
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2)"]
-      interval: 10s
-      timeout: 3s
-      retries: 6
-    restart: unless-stopped
-
   web:
     build: .
     ports:
@@ -31,11 +34,10 @@ services:
     environment:
       PORT: "3000"
       DATABASE_URL: postgres://spendwise:${POSTGRES_PASSWORD:-spendwise-local}@database:5432/spendwise
-      PREDICTOR_URL: http://predictor:5000
+      PREDICTOR_URL: http://127.0.0.1:5000
+      PREDICTOR_AUTOSTART: "true"
     depends_on:
       database:
-        condition: service_healthy
-      predictor:
         condition: service_healthy
     restart: unless-stopped
 
